@@ -42,7 +42,7 @@ def summary(results):
         text += f'- {title}: **${row["total"]:.2f}**, {row["discount"]}% below estimate.\n'
     if results['errors']:
         text += '\n## Check issues\n\n' + '\n'.join('- ' + tracker.html.escape(e) for e in results['errors']) + '\n'
-    text += '\nDownload **gear-scout-report** under Artifacts and open `report.html` for the full dashboard.\n\nPhone/email deal delivery is not configured; results and alert history are available in this run.\n'
+    text += '\nOpen the Gear Scout website for the full dashboard. A downloadable copy is also available under **gear-scout-report** in Artifacts.\n\nPhone/email deal delivery is not configured; results and alert history are available in this run.\n'
     return text
 
 def main():
