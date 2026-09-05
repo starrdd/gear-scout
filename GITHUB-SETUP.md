@@ -24,7 +24,7 @@ The workflow's hourly schedule is set in `.github/workflows/gear-scout.yml`. `in
 
 ## State, results, and notifications
 
-The latest report is a private downloadable Actions artifact, **not a publicly hosted website**. Each artifact expires after seven days. Live alert deduplication is saved separately in `cloud-alert-state.json` in your private repository, so it survives runner shutdown and artifact expiration. Updates use GitHub's temporary built-in token and optimistic version checks; no personal access token is required. The workflow has repository contents-write permission for this one state file. Do not run simultaneous external writers against that state file.
+The latest report is published as a GitHub Pages website and also saved as a downloadable Actions artifact. Each artifact expires after seven days. Live alert deduplication is saved separately in `cloud-alert-state.json` in the repository, so it survives runner shutdown and artifact expiration. Updates use GitHub's temporary built-in token and optimistic version checks; no personal access token is required. The workflow has repository contents-write permission for this one state file. Do not run simultaneous external writers against that state file.
 
 Demo runs do not write live alert state or contact notification services. For now, review deals in Actions or the downloaded report. **Phone/email deal delivery is not yet configured.** GitHub's workflow failure notifications follow your account's notification settings and are not deal notifications.
 
