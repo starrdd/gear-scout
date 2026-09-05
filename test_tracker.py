@@ -49,7 +49,10 @@ class TrackerTests(unittest.TestCase):
         self.assertFalse(self.score()['good'])
         self.item['seller']['feedbackScore']=100
         self.item['price']['value']='50'
-        self.assertFalse(self.score()['good'])
+        result = self.score()
+        self.assertTrue(result['good'])
+        self.assertEqual(result['tier'], 'Exceptional find')
+        self.assertIn('Unusually cheap', result['warnings'][0])
 
     def test_dedup_and_price_drop(self):
         r=self.score()
@@ -57,6 +60,14 @@ class TrackerTests(unittest.TestCase):
         self.assertFalse(t.should_alert(r, {r['id']:320}))
         self.assertFalse(t.should_alert(r, {r['id']:324}))
         self.assertTrue(t.should_alert(r, {r['id']:325}))
+
+    def test_deal_tiers_match_relative_value(self):
+        self.assertEqual(t.deal_tier(59.2), 'Exceptional find')
+        self.assertEqual(t.deal_tier(40.8), 'Strong value')
+        self.assertEqual(t.deal_tier(18.4), 'Good buy')
+        self.assertEqual(t.deal_tier(2), 'Fair price')
+        self.assertEqual(t.deal_tier(-11), 'Above market')
+        self.assertEqual(t.deal_tier(None), 'Needs details')
 
     def test_api_location_pagination(self):
         api=t.Ebay()

@@ -87,11 +87,23 @@ The example prices are also assumptions. Model matching uses regular expressions
 
 `discount = 100 × (1 − (item price + shipping) / typical used price)`
 
+Listings are grouped by their landed-price discount:
+
+- **Exceptional find:** 50% or more below the benchmark
+- **Strong value:** 30–49.9% below
+- **Good buy:** 15–29.9% below
+- **Fair price:** from 14.9% below through 10% above
+- **Above market:** more than 10% above
+
+Unknown shipping produces **Needs details** instead. Exceptional prices still carry a warning to check for scams, missing parts, and hidden faults.
+
 A good-deal alert requires a known total within budget, discount at or above the threshold, and adequate seller feedback. Discounts over 55% are held for manual review. Unknown shipping stays unscored. The cheapest returned USD shipping option is used; verify that option and the final checkout amount for your address. Tax, travel, optional extras, and negotiated offers are excluded.
 
 Auction-only items are excluded so an opening bid cannot masquerade as a purchase price. Fixed-price listings may also offer bidding or negotiation; scoring uses the advertised fixed price.
 
 Alerts occur once per eBay item ID, then again only after a further decrease of at least $5 from its last alerted total. Alerts are persisted across restarts; demo and live state are separate. Changing delivery mode or thresholds does not clear alert history. Delete `data/alert-state.json` if you deliberately want alerts to start fresh. Avoid running multiple tracker processes against the same output folder.
+
+In GitHub live mode, every newly detected **Exceptional find** creates an issue assigned to the repository owner. GitHub can deliver assigned-issue notifications by email and through the GitHub mobile app. Demo listings never create issues.
 
 Before buying a keyboard, test every key and velocity response, sustain, speakers and headphone jacks; check for sticking or unusual mechanical noises and confirm the power supply and included stand/pedal. Review the actual listing and seller; the score is a screening aid.
 

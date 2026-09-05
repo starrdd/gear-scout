@@ -118,12 +118,26 @@ def evaluate(item, s, c, mode):
         warnings.append('Limited or low seller feedback — inspect carefully')
     if discount is not None and discount > 55:
         warnings.append('Unusually cheap — inspect completeness and condition')
-    good = discount is not None and discount >= c['alert_discount_percent'] and not warnings
+    tier = deal_tier(discount)
+    good = discount is not None and discount >= c['alert_discount_percent'] and shipping is not None and trusted
     url = item.get('itemWebUrl', '')
     parsed = urllib.parse.urlparse(url)
     if parsed.scheme != 'https' or not (parsed.hostname == 'ebay.com' or (parsed.hostname or '').endswith('.ebay.com')):
         url = 'https://www.ebay.com/'
-    return {'id': item['itemId'], 'title': title, 'gear': s['name'], 'price': amount, 'shipping': shipping, 'total': total, 'discount': discount, 'typical': s['typical_used_price'], 'good': good, 'warnings': warnings, 'mode': mode, 'url': url, 'condition': item.get('condition', 'Unknown'), 'location': item.get('itemLocation', {}).get('city', ''), 'seller': seller.get('username', 'Unknown')}
+    return {'id': item['itemId'], 'title': title, 'gear': s['name'], 'price': amount, 'shipping': shipping, 'total': total, 'discount': discount, 'typical': s['typical_used_price'], 'tier': tier, 'good': good, 'warnings': warnings, 'mode': mode, 'url': url, 'condition': item.get('condition', 'Unknown'), 'location': item.get('itemLocation', {}).get('city', ''), 'seller': seller.get('username', 'Unknown')}
+
+def deal_tier(discount):
+    if discount is None:
+        return 'Needs details'
+    if discount >= 50:
+        return 'Exceptional find'
+    if discount >= 30:
+        return 'Strong value'
+    if discount >= 15:
+        return 'Good buy'
+    if discount >= -10:
+        return 'Fair price'
+    return 'Above market'
 
 def should_alert(row, state):
     previous = state.get(row['id'])
@@ -156,7 +170,7 @@ def render(rows, c, errors, demo, path, alerts):
     money = lambda x: 'Unknown' if x is None else f'${x:,.0f}'
     cards = []
     for r in sorted(rows, key=lambda x: (not x['good'], -(x['discount'] if x['discount'] is not None else -999))):
-        badge = 'Good deal' if r['good'] else 'Review details'
+        badge = r.get('tier', deal_tier(r['discount']))
         discount = 'Unscored' if r['discount'] is None else f'{r["discount"]:g}% below estimate'
         cards.append(f'<article><div class="row"><span class="tag {"good" if r["good"] else ""}">{badge}</span><small>{esc(r["mode"])}</small></div><h2>{esc(r["title"])}</h2><div class="price">{money(r["total"])}</div><p>{money(r["price"])} item + {money(r["shipping"])} shipping / pickup</p><strong>{discount}</strong><p>Used benchmark: {money(r["typical"])} · {esc(r["condition"])}</p><p>{esc(r["location"])} · {esc(r["seller"])}</p><p class="warning">{esc(" · ".join(r["warnings"]))}</p>' + ('<span class="sample">Sample listing — not for sale</span>' if demo else f'<a href="{esc(r["url"])}" target="_blank" rel="noopener noreferrer">View on eBay ↗</a>') + '</article>')
     searches = []
@@ -175,7 +189,7 @@ def render(rows, c, errors, demo, path, alerts):
     content += '<div class="grid">' + (''.join(cards) or '<p>No qualifying candidates in this check. Browse your saved searches below or adjust config.json.</p>') + '</div>'
     content += '''<h2>Score any listing</h2><p>For Facebook, OfferUp, Craigslist, or anything you find elsewhere. The calculation stays in this browser and is never uploaded.</p><section class="calculator"><div class="formgrid"><div class="field"><label for="gear">Gear</label><select id="gear"></select></div><div class="field"><label for="asking">Asking price</label><input id="asking" inputmode="decimal" type="number" min="0" step="0.01" placeholder="300"></div><div class="field"><label for="shipping">Shipping</label><input id="shipping" inputmode="decimal" type="number" min="0" step="0.01" value="0"></div><div class="field"><label for="extras">Travel / fees</label><input id="extras" inputmode="decimal" type="number" min="0" step="0.01" value="0"></div></div><div class="checks"><label><input id="working" type="checkbox" checked> Confirmed working</label><label><input id="complete" type="checkbox" checked> Power supply / essential parts included</label><label><input id="testable" type="checkbox" checked> Can test or has buyer protection</label></div><button id="score" type="button">Score this listing</button><div id="verdict" class="verdict" aria-live="polite"><p>Enter the price to see the landed total and deal score.</p></div></section>'''
     content += '<h2>Your cross-market watchlist</h2><p>These links open ready-made searches. On Facebook, OfferUp, Craigslist, and Reverb, use the marketplace’s Save Search or alert control after opening the link.</p><div class="table"><table><tr><th>Gear</th><th>Max total</th><th>Used estimate</th><th>Search sources</th></tr>' + ''.join(searches) + '</table></div>'
-    content += f'''<script>const gear={gear_json};const select=document.getElementById('gear');for(const [i,g] of gear.entries()){{const o=document.createElement('option');o.value=i;o.textContent=`${{g.name}} — benchmark $${{g.typical}}`;select.appendChild(o)}}document.getElementById('score').addEventListener('click',()=>{{const g=gear[Number(select.value)],numbers=['asking','shipping','extras'].map(id=>Number(document.getElementById(id).value)),box=document.getElementById('verdict');if(numbers.some(n=>!Number.isFinite(n)||n<0)||numbers[0]<=0){{box.innerHTML='<p class="warning">Enter a valid asking price. Costs cannot be negative.</p>';return}}const total=numbers.reduce((a,b)=>a+b,0),discount=100*(1-total/g.typical),risks=[];if(!document.getElementById('working').checked)risks.push('working condition is unconfirmed');if(!document.getElementById('complete').checked)risks.push('essential parts may be missing');if(!document.getElementById('testable').checked)risks.push('no testing or buyer protection');let label=discount>=20?'Good price to investigate':discount>=10?'Fair-to-good price':'Not a standout deal';if(total>g.max)label='Over your current budget';if(discount>55)risks.push('price is unusually low—check for scams or hidden faults');box.replaceChildren();const strong=document.createElement('strong');strong.textContent=label;const p=document.createElement('p');p.textContent=`Total $${{total.toFixed(2)}} · ${{Math.abs(discount).toFixed(1)}}% ${{discount>=0?'below':'above'}} your $${{g.typical}} benchmark.${{risks.length?' Verify '+risks.join(', ')+'.':''}}`;box.append(strong,p)}});</script>'''
+    content += f'''<script>const gear={gear_json};const select=document.getElementById('gear');for(const [i,g] of gear.entries()){{const o=document.createElement('option');o.value=i;o.textContent=`${{g.name}} — benchmark $${{g.typical}}`;select.appendChild(o)}}const tier=d=>d>=50?'Exceptional find':d>=30?'Strong value':d>=15?'Good buy':d>=-10?'Fair price':'Above market';document.getElementById('score').addEventListener('click',()=>{{const g=gear[Number(select.value)],numbers=['asking','shipping','extras'].map(id=>Number(document.getElementById(id).value)),box=document.getElementById('verdict');if(numbers.some(n=>!Number.isFinite(n)||n<0)||numbers[0]<=0){{box.innerHTML='<p class="warning">Enter a valid asking price. Costs cannot be negative.</p>';return}}const total=numbers.reduce((a,b)=>a+b,0),discount=100*(1-total/g.typical),risks=[];if(!document.getElementById('working').checked)risks.push('working condition is unconfirmed');if(!document.getElementById('complete').checked)risks.push('essential parts may be missing');if(!document.getElementById('testable').checked)risks.push('no testing or buyer protection');if(discount>55)risks.push('price is unusually low—check for scams or hidden faults');box.replaceChildren();const strong=document.createElement('strong');strong.textContent=tier(discount)+(total>g.max?' · over your budget':'');const p=document.createElement('p');p.textContent=`Total $${{total.toFixed(2)}} · ${{Math.abs(discount).toFixed(1)}}% ${{discount>=0?'below':'above'}} your $${{g.typical}} benchmark.${{risks.length?' Verify '+risks.join(', ')+'.':''}}`;box.append(strong,p)}});</script>'''
     content += '<footer><p>Benchmarks are editable starter assumptions, not verified sold-market averages. The calculator is a screening aid; it cannot inspect photos, verify sellers, or account for taxes and repairs unless you include them as fees.</p><p>Only eBay is designed for automatic retrieval after API approval. Other marketplace links use official browsing and saved-alert features; no Facebook or OfferUp account scraping is performed. Search URLs and filters can change, so verify each marketplace’s displayed location, radius, condition, and maximum price.</p></footer></main></body></html>'
     tmp = path.with_suffix('.tmp')
     tmp.write_text(content, encoding='utf-8')
@@ -220,7 +234,7 @@ def run(c, api, demo, directory, desktop):
                 result = subprocess.run(['osascript', '-e', f'display notification "{len(alerts)} new music gear deals. Open your Gear Scout report." with title "Gear Scout"'], capture_output=True)
                 if result.returncode:
                     errors.append('Desktop notification failed; deals are saved in alerts.jsonl.')
-    atomic_json(directory / 'results.json', {'demo': demo, 'checked_at': dt.datetime.now(dt.timezone.utc).isoformat(), 'errors': errors, 'items': list(rows.values())})
+    atomic_json(directory / 'results.json', {'demo': demo, 'checked_at': dt.datetime.now(dt.timezone.utc).isoformat(), 'errors': errors, 'items': list(rows.values()), 'new_alerts': alerts})
     report = directory / 'report.html'
     render(list(rows.values()), c, errors, demo, report, alerts)
     print(f'{len(rows)} candidates; {len(errors)} issues. Report: {report}')

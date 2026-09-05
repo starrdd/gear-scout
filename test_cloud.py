@@ -8,6 +8,19 @@ import cloud_run as c
 import tracker
 
 class CloudTests(unittest.TestCase):
+    def test_exceptional_issue_payload(self):
+        row = {'title':'AKG C214','total':100.0,'discount':59.2,'typical':245,'url':'https://www.ebay.com/itm/1','condition':'Used','seller':'seller','location':'LA'}
+        response = unittest.mock.MagicMock()
+        response.__enter__.return_value = response
+        response.__exit__.return_value = False
+        response.read.return_value = b'{}'
+        with patch.dict(os.environ, {'GITHUB_REPOSITORY':'starrdd/gear-scout','GITHUB_REPOSITORY_OWNER':'starrdd','GH_TOKEN':'test'}), patch('urllib.request.urlopen', return_value=response) as call:
+            c.github_issue(row)
+        request = call.call_args.args[0]
+        payload = json.loads(request.data)
+        self.assertIn('Exceptional find', payload['title'])
+        self.assertEqual(payload['assignees'], ['starrdd'])
+
     def test_demo_no_network_or_state(self):
         with tempfile.TemporaryDirectory() as d:
             root=Path(d)

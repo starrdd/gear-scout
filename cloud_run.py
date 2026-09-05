@@ -11,6 +11,24 @@ import tracker
 
 STATE_FILE = 'cloud-alert-state.json'
 
+def github_issue(row):
+    """Create a GitHub notification for a newly found exceptional deal."""
+    repo = os.environ['GITHUB_REPOSITORY']
+    url = 'https://api.github.com/repos/' + repo + '/issues'
+    headers = {'Authorization': 'Bearer ' + os.environ['GH_TOKEN'], 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', 'Content-Type': 'application/json'}
+    safe_title = str(row['title']).replace('\n', ' ').strip()[:140]
+    body = {
+        'title': f'Exceptional find: {safe_title} — ${row["total"]:.2f}',
+        'body': f'**{row["discount"]}% below the ${row["typical"]:.0f} used benchmark**\n\n[Open the eBay listing]({row["url"]})\n\nCondition: {row["condition"]}  \nSeller: {row["seller"]}  \nLocation: {row["location"]}\n\nVerify the listing, seller, completeness, and final checkout price before buying.',
+        'assignees': [os.environ['GITHUB_REPOSITORY_OWNER']],
+    }
+    req = urllib.request.Request(url, headers=headers, method='POST', data=json.dumps(body).encode())
+    try:
+        with urllib.request.urlopen(req, timeout=30) as response:
+            return json.load(response)
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(f'GitHub deal notification failed (HTTP {e.code}); alert state was not saved and the next run will retry.') from None
+
 def github_state(method='GET', body=None):
     repo = os.environ['GITHUB_REPOSITORY']
     url = 'https://api.github.com/repos/' + repo + '/contents/' + STATE_FILE
@@ -66,6 +84,10 @@ def main():
     c = tracker.load_config(tracker.ROOT / 'config.json')
     _, issues = tracker.run(c, tracker.Ebay(), demo, out, False)
     results = json.loads((out / 'results.json').read_text())
+    if not demo:
+        for row in results.get('new_alerts', []):
+            if row.get('tier') == 'Exceptional find':
+                github_issue(row)
     report = summary(results)
     (out / 'summary.md').write_text(report)
     if os.getenv('GITHUB_STEP_SUMMARY'):

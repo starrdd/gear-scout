@@ -75,8 +75,8 @@
       "name": "AKG C214",
       "query": "AKG C214",
       "title_pattern": "\\bakg\\s+c[ -]?214\\b",
-      "max_price": 225,
-      "typical_used_price": 275
+      "max_price": 210,
+      "typical_used_price": 245
     }
   ]
 }
