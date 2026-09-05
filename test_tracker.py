@@ -120,6 +120,7 @@ class TrackerTests(unittest.TestCase):
             self.assertIn('The calculation stays in this browser', page)
             self.assertIn('Facebook', page)
             self.assertNotIn('http-equiv="refresh"', page)
+            self.assertNotIn('ZIP 90503', page)
 
 if __name__=='__main__':
     unittest.main()
