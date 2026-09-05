@@ -108,5 +108,18 @@ class TrackerTests(unittest.TestCase):
             with self.assertRaises(AssertionError):
                 t.load_config(p)
 
+    def test_cross_market_links_and_calculator(self):
+        links = dict(t.marketplace_links(self.s, self.c))
+        self.assertEqual(set(links), {'Facebook', 'OfferUp', 'Craigslist LA', 'Craigslist OC', 'Reverb', 'Guitar Center', 'Music Go Round', 'Sweetwater', 'Mercari', 'ShopGoodwill'})
+        self.assertIn('Yamaha+P-125', links['Craigslist LA'])
+        with tempfile.TemporaryDirectory() as temp:
+            report = Path(temp) / 'report.html'
+            t.render([], self.c, [], True, report, [])
+            page = report.read_text()
+            self.assertIn('Score any listing', page)
+            self.assertIn('The calculation stays in this browser', page)
+            self.assertIn('Facebook', page)
+            self.assertNotIn('http-equiv="refresh"', page)
+
 if __name__=='__main__':
     unittest.main()
