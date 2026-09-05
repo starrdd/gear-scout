@@ -19,6 +19,9 @@ jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -48,7 +51,4 @@ jobs:
           path: cloud-output
       - name: Publish website
         uses: actions/deploy-pages@v4
-        environment:
-          name: github-pages
-          url: ${{ steps.deployment.outputs.page_url }}
         id: deployment
