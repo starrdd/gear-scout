@@ -1,0 +1,82 @@
+{
+  "zip_code": "90503",
+  "radius_miles": 50,
+  "mode": "both",
+  "interval_minutes": 60,
+  "condition_ids": [
+    "3000"
+  ],
+  "alert_discount_percent": 20,
+  "min_seller_feedback_percent": 98,
+  "min_seller_feedback_count": 10,
+  "exclude_title_patterns": [
+    "\\b(for parts|not working|broken|repair|untested|as[ -]is)\\b",
+    "\\b(cover|case|bag|adapter|replacement|manual|box only|stand only|pedal only)\\b",
+    "\\b(?:compatible with|for)\\s+(?:yamaha|roland|kawai|akg)\\b"
+  ],
+  "searches": [
+    {
+      "name": "Yamaha P-125",
+      "query": "Yamaha P-125",
+      "title_pattern": "\\byamaha\\s+p[ -]?125\\b",
+      "max_price": 350,
+      "typical_used_price": 425
+    },
+    {
+      "name": "Yamaha P-225",
+      "query": "Yamaha P-225",
+      "title_pattern": "\\byamaha\\s+p[ -]?225\\b",
+      "max_price": 450,
+      "typical_used_price": 525
+    },
+    {
+      "name": "Yamaha P-45",
+      "query": "Yamaha P-45",
+      "title_pattern": "\\byamaha\\s+p[ -]?45\\b",
+      "max_price": 250,
+      "typical_used_price": 300
+    },
+    {
+      "name": "Yamaha P-71",
+      "query": "Yamaha P-71",
+      "title_pattern": "\\byamaha\\s+p[ -]?71\\b",
+      "max_price": 250,
+      "typical_used_price": 300
+    },
+    {
+      "name": "Roland FP-10",
+      "query": "Roland FP-10",
+      "title_pattern": "\\broland\\s+fp[ -]?10\\b",
+      "max_price": 325,
+      "typical_used_price": 375
+    },
+    {
+      "name": "Roland FP-30X",
+      "query": "Roland FP-30X",
+      "title_pattern": "\\broland\\s+fp[ -]?30x\\b",
+      "max_price": 450,
+      "typical_used_price": 525
+    },
+    {
+      "name": "Kawai ES110",
+      "query": "Kawai ES110",
+      "title_pattern": "\\bkawai\\s+es[ -]?110\\b",
+      "max_price": 400,
+      "typical_used_price": 475
+    },
+    {
+      "name": "Kawai ES120",
+      "query": "Kawai ES120",
+      "title_pattern": "\\bkawai\\s+es[ -]?120\\b",
+      "max_price": 500,
+      "typical_used_price": 575
+    },
+    {
+      "name": "AKG C214",
+      "query": "AKG C214",
+      "title_pattern": "\\bakg\\s+c[ -]?214\\b",
+      "max_price": 225,
+      "typical_used_price": 275
+    }
+  ]
+}

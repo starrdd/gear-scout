@@ -1,0 +1,40 @@
+name: Gear Scout
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '*.py'
+      - 'config.json'
+      - '.github/workflows/gear-scout.yml'
+  schedule:
+    - cron: '23 * * * *'
+permissions:
+  contents: write
+concurrency:
+  group: gear-scout
+  cancel-in-progress: false
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Run tests
+        run: python3 -m unittest -v
+      - name: Check deals (demo until live mode is enabled)
+        env:
+          GEAR_SCOUT_MODE: ${{ vars.GEAR_SCOUT_MODE }}
+          EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
+          EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
+          GH_TOKEN: ${{ github.token }}
+        run: python3 cloud_run.py
+      - name: Save browser report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: gear-scout-report
+          path: cloud-output/
+          retention-days: 7
+          if-no-files-found: warn
