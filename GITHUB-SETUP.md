@@ -7,7 +7,7 @@ The workflow runs once per hour at minute 23, plus on code updates and manual ru
 1. Create a **private** GitHub repository named `gear-scout`.
 2. Upload this folder's source files to the repository root, including `.github/workflows/gear-scout.yml`. The `.github` folder may be hidden in Finder; Command+Shift+Period toggles hidden files. Do not upload the ZIP as a single file, credentials, or generated data.
 3. Open **Actions → Gear Scout**. The initial source upload triggers a run; you can also choose **Run workflow** on the default branch.
-4. A successful run has a green check and a summary labeled **DEMO**. Under **Artifacts**, download `gear-scout-report`, unzip it, and open `report.html`.
+4. A successful run has a green check and a summary labeled **DEMO**. Under **Artifacts**, download `gear-scout-report`, unzip it, and open `report.html`. The report includes cross-market search links and a listing calculator even in demo mode.
 5. Leave the hourly schedule running if you want to verify unattended operation. Your Mac can be switched off. To pause, open the workflow's menu and choose **Disable workflow**.
 
 ## After eBay approval
