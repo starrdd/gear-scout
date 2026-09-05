@@ -1,6 +1,8 @@
 # Gear Scout
 
-A small, local eBay music-gear deal tracker. Python 3.9 or newer; no packages, database, or subscription to install. It writes a browser dashboard, structured results, and an alert history. Nothing is purchased automatically.
+A small, cross-market music-gear deal tracker. Python 3.9 or newer; no packages, database, or subscription to install. It writes a browser dashboard, structured results, and an alert history. Nothing is purchased automatically.
+
+The dashboard includes direct searches for eBay, Facebook Marketplace, OfferUp, Craigslist Los Angeles and Orange County, Reverb, Guitar Center, Music Go Round, Sweetwater Used, Mercari, and ShopGoodwill. It also has a private in-browser calculator for scoring any listing you find. Only eBay listing retrieval is automated; the other sources use their normal saved-search and notification controls because they do not offer a suitable public buyer-search API.
 
 ## Try it now
 
