@@ -10,6 +10,8 @@ on:
     - cron: '23 * * * *'
 permissions:
   contents: write
+  pages: write
+  id-token: write
 concurrency:
   group: gear-scout
   cancel-in-progress: false
@@ -38,4 +40,15 @@ jobs:
           path: cloud-output/
           retention-days: 7
           if-no-files-found: warn
-
+      - name: Prepare website
+        run: cp cloud-output/report.html cloud-output/index.html
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: cloud-output
+      - name: Publish website
+        uses: actions/deploy-pages@v4
+        environment:
+          name: github-pages
+          url: ${{ steps.deployment.outputs.page_url }}
+        id: deployment
