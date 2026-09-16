@@ -19,7 +19,7 @@ def github_issue(row):
     safe_title = str(row['title']).replace('\n', ' ').strip()[:140]
     body = {
         'title': f'Exceptional find: {safe_title} — ${row["total"]:.2f}',
-        'body': f'**{row["discount"]}% below the ${row["typical"]:.0f} used benchmark**\n\n[Open the eBay listing]({row["url"]})\n\nCondition: {row["condition"]}  \nSeller: {row["seller"]}  \nLocation: {row["location"]}\n\nVerify the listing, seller, completeness, and final checkout price before buying.',
+        'body': f'**{row["discount"]}% below the ${row["typical"]:.0f} used benchmark**\n\n[Open the eBay listing]({row["url"]})\n\nCondition: {row["condition"]}\n\nVerify the listing, seller, completeness, and final checkout price before buying.',
         'assignees': [os.environ['GITHUB_REPOSITORY_OWNER']],
     }
     req = urllib.request.Request(url, headers=headers, method='POST', data=json.dumps(body).encode())

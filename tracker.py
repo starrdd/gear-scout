@@ -124,7 +124,8 @@ def evaluate(item, s, c, mode):
     parsed = urllib.parse.urlparse(url)
     if parsed.scheme != 'https' or not (parsed.hostname == 'ebay.com' or (parsed.hostname or '').endswith('.ebay.com')):
         url = 'https://www.ebay.com/'
-    return {'id': item['itemId'], 'title': title, 'gear': s['name'], 'price': amount, 'shipping': shipping, 'total': total, 'discount': discount, 'typical': s['typical_used_price'], 'tier': tier, 'good': good, 'warnings': warnings, 'mode': mode, 'url': url, 'condition': item.get('condition', 'Unknown'), 'location': item.get('itemLocation', {}).get('city', ''), 'seller': seller.get('username', 'Unknown')}
+    # Seller identifiers and location are used only during scoring, never saved.
+    return {'id': item['itemId'], 'title': title, 'gear': s['name'], 'price': amount, 'shipping': shipping, 'total': total, 'discount': discount, 'typical': s['typical_used_price'], 'tier': tier, 'good': good, 'warnings': warnings, 'mode': mode, 'url': url, 'condition': item.get('condition', 'Unknown')}
 
 def deal_tier(discount):
     if discount is None:
@@ -172,7 +173,7 @@ def render(rows, c, errors, demo, path, alerts):
     for r in sorted(rows, key=lambda x: (not x['good'], -(x['discount'] if x['discount'] is not None else -999))):
         badge = r.get('tier', deal_tier(r['discount']))
         discount = 'Unscored' if r['discount'] is None else f'{r["discount"]:g}% below estimate'
-        cards.append(f'<article><div class="row"><span class="tag {"good" if r["good"] else ""}">{badge}</span><small>{esc(r["mode"])}</small></div><h2>{esc(r["title"])}</h2><div class="price">{money(r["total"])}</div><p>{money(r["price"])} item + {money(r["shipping"])} shipping / pickup</p><strong>{discount}</strong><p>Used benchmark: {money(r["typical"])} · {esc(r["condition"])}</p><p>{esc(r["location"])} · {esc(r["seller"])}</p><p class="warning">{esc(" · ".join(r["warnings"]))}</p>' + ('<span class="sample">Sample listing — not for sale</span>' if demo else f'<a href="{esc(r["url"])}" target="_blank" rel="noopener noreferrer">View on eBay ↗</a>') + '</article>')
+        cards.append(f'<article><div class="row"><span class="tag {"good" if r["good"] else ""}">{badge}</span><small>{esc(r["mode"])}</small></div><h2>{esc(r["title"])}</h2><div class="price">{money(r["total"])}</div><p>{money(r["price"])} item + {money(r["shipping"])} shipping / pickup</p><strong>{discount}</strong><p>Used benchmark: {money(r["typical"])} · {esc(r["condition"])}</p><p class="warning">{esc(" · ".join(r["warnings"]))}</p>' + ('<span class="sample">Sample listing — not for sale</span>' if demo else f'<a href="{esc(r["url"])}" target="_blank" rel="noopener noreferrer">View on eBay ↗</a>') + '</article>')
     searches = []
     for s in c['searches']:
         url = 'https://www.ebay.com/sch/i.html?' + urllib.parse.urlencode({'_nkw': s['query'], '_udhi': s['max_price'], 'LH_BIN': 1, 'LH_ItemCondition': '|'.join(map(str,c['condition_ids'])), '_sop': 10, '_stpos': c['zip_code']})

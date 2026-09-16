@@ -16,6 +16,18 @@ Or double-click **Try Demo.command** on a Mac. The demo uses invented examples a
 
 ## Enable real eBay checks
 
+### GitHub-hosted tracker
+
+The public dashboard at https://starrdd.github.io/gear-scout/ is refreshed by GitHub Actions while your Mac is off. It remains in **DEMO** mode until eBay activates the production keyset and `GEAR_SCOUT_MODE` is changed to `live` in repository Actions variables. The production App ID and Cert ID are already configured as GitHub Actions secrets. Do not put the Cert ID in code or an ordinary variable.
+
+Because the dashboard retains listing cards, eBay requires Marketplace Account Deletion notifications. A dedicated Cloudflare Worker is deployed at `https://gear-scout-notifications.aaccinelli320.workers.dev/ebay/deletion`; its source is in `ebay-notifications-worker.js`. In the Worker's **Settings → Runtime variables and secrets**, configure `EBAY_CLIENT_ID` with the production App ID and mark `EBAY_CLIENT_SECRET` and `EBAY_VERIFICATION_TOKEN` as **Secret**. The verification token must be 32–80 letters, numbers, underscores, or hyphens. Enter the same token and the exact Worker URL in eBay's **Application Keys → Notifications → Marketplace Account Deletion** form, along with the requested failure-notification email. Verify eBay's challenge and **Send Test Notification** before switching to live mode.
+
+The tracker checks seller feedback but discards seller usernames, seller locations, eBay user IDs, and buyer account data before saving reports or alerts. The Worker validates signed deletion notifications; there is no retained eBay account data to match. If account identifiers are ever added to saved results, the deletion handler must be expanded to remove that data everywhere before live use.
+
+New **Exceptional find** issues are assigned to the repository owner. Turn on GitHub assigned-issue email or mobile notifications to receive them. Keep the site in demo mode if the Worker or eBay subscription is unverified.
+
+### Run locally
+
 1. Register at https://developer.ebay.com/ and obtain your **production** App ID (Client ID) and Cert ID (Client Secret).
 2. Confirm your keyset has production Browse API access. eBay documents eligibility and approval requirements at https://developer.ebay.com/api-docs/buy/buy-requirements.html . A developer account alone does not guarantee access. Sandbox keys do not fetch real listings.
 3. Set the credentials in Terminal. These prompts avoid putting your secret into command history (macOS zsh):

@@ -21,6 +21,8 @@ class TrackerTests(unittest.TestCase):
         self.assertEqual(r['total'], 320)
         self.assertEqual(r['discount'], 24.7)
         self.assertTrue(r['good'])
+        self.assertNotIn('seller', r)
+        self.assertNotIn('location', r)
 
     def test_unknown_shipping_not_free(self):
         self.item['shippingOptions'] = []
