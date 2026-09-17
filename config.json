@@ -12,6 +12,8 @@
   "exclude_title_patterns": [
     "\\b(for parts|not working|broken|repair|untested|as[ -]is)\\b",
     "\\b(cover|case|bag|adapter|replacement|manual|box only|stand only|pedal only)\\b",
+    "\\b(?:sustain|damper)\\s+pedal\\b",
+    "\\b(?:jack|circuit|main)\\s+board\\b",
     "\\b(?:compatible with|for)\\s+(?:yamaha|roland|kawai|akg)\\b"
   ],
   "searches": [

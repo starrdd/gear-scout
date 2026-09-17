@@ -18,13 +18,13 @@ Or double-click **Try Demo.command** on a Mac. The demo uses invented examples a
 
 ### GitHub-hosted tracker
 
-The public dashboard at https://starrdd.github.io/gear-scout/ is refreshed by GitHub Actions while your Mac is off. It remains in **DEMO** mode until eBay activates the production keyset and `GEAR_SCOUT_MODE` is changed to `live` in repository Actions variables. The production App ID and Cert ID are already configured as GitHub Actions secrets. Do not put the Cert ID in code or an ordinary variable.
+The public dashboard at https://starrdd.github.io/gear-scout/ is refreshed by GitHub Actions while your Mac is off. **Live eBay mode is enabled.** The production App ID and Cert ID are configured as GitHub Actions secrets; `GEAR_SCOUT_MODE` is `live` in repository Actions variables. Do not put the Cert ID in code or an ordinary variable.
 
-Because the dashboard retains listing cards, eBay requires Marketplace Account Deletion notifications. A dedicated Cloudflare Worker is deployed at `https://gear-scout-notifications.aaccinelli320.workers.dev/ebay/deletion`; its source is in `ebay-notifications-worker.js`. In the Worker's **Settings → Runtime variables and secrets**, configure `EBAY_CLIENT_ID` with the production App ID and mark `EBAY_CLIENT_SECRET` and `EBAY_VERIFICATION_TOKEN` as **Secret**. The verification token must be 32–80 letters, numbers, underscores, or hyphens. Enter the same token and the exact Worker URL in eBay's **Application Keys → Notifications → Marketplace Account Deletion** form, along with the requested failure-notification email. Verify eBay's challenge and **Send Test Notification** before switching to live mode.
+Because the dashboard retains listing cards, eBay requires Marketplace Account Deletion notifications. A dedicated Cloudflare Worker is deployed at `https://gear-scout-notifications.aaccinelli320.workers.dev/ebay/deletion`; its source is in `ebay-notifications-worker.js`. eBay accepted its verification challenge and test notification on September 17, 2026. In the Worker's **Settings → Runtime variables and secrets**, `EBAY_CLIENT_ID` contains the production App ID, and `EBAY_CLIENT_SECRET` and `EBAY_VERIFICATION_TOKEN` are **Secret** values. If you rotate either secret, update Cloudflare and repeat **Send Test Notification** in eBay's **Application Keys → Notifications** page.
 
 The tracker checks seller feedback but discards seller usernames, seller locations, eBay user IDs, and buyer account data before saving reports or alerts. The Worker validates signed deletion notifications; there is no retained eBay account data to match. If account identifiers are ever added to saved results, the deletion handler must be expanded to remove that data everywhere before live use.
 
-New **Exceptional find** issues are assigned to the repository owner. Turn on GitHub assigned-issue email or mobile notifications to receive them. Keep the site in demo mode if the Worker or eBay subscription is unverified.
+New **Exceptional find** issues are assigned to the repository owner. Turn on GitHub assigned-issue email or mobile notifications to receive them. If notification delivery later fails, switch the tracker to demo mode until it is repaired.
 
 ### Run locally
 
@@ -133,7 +133,7 @@ Each search/delivery mode fetches up to three pages of 200 newest results. A ban
 
 ## Verification and API references
 
-Run `python3 -m unittest -v` from this folder. Tests use fixtures and mocked API responses; they cover shipping, budgets, model/accessory exclusions, seller checks, duplicate alerts, pagination, safe HTML output, failure visibility, and demo isolation. Live authentication and listing retrieval need your production credentials and have not been verified in this delivery.
+Run `python3 -m unittest -v` from this folder. Tests use fixtures and mocked API responses; they cover shipping, budgets, model/accessory exclusions, seller checks, duplicate alerts, pagination, safe HTML output, failure visibility, and demo isolation. Live eBay authentication, listing retrieval, and notification delivery were verified on September 17, 2026.
 
 Official documentation:
 - https://developer.ebay.com/api-docs/buy/browse/resources/item_summary/methods/search

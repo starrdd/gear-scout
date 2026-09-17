@@ -86,6 +86,7 @@ export default {
       return new Response(null, { status: 204 });
     } catch (error) {
       // Do not log payloads or personal identifiers.
+      console.error('Notification verification failed:', error?.message);
       return json({ error: 'Could not verify notification' }, 503);
     }
   },

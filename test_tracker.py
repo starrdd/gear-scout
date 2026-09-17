@@ -36,9 +36,12 @@ class TrackerTests(unittest.TestCase):
         self.assertIsNone(self.score())
 
     def test_wrong_models_accessories_and_repair_excluded(self):
-        for title in ['Yamaha P-125a piano', 'Yamaha P-1250 piano', 'Yamaha P-125 cover', 'Yamaha P-125 for parts', 'Adapter for Yamaha P-125']:
+        for title in ['Yamaha P-125a piano', 'Yamaha P-1250 piano', 'Yamaha P-125 cover', 'Yamaha P-125 for parts', 'Adapter for Yamaha P-125', 'Yamaha P-125 Digital Jack Board. YJ451']:
             self.item['title'] = title
             self.assertIsNone(self.score(), title)
+        roland = copy.deepcopy(self.item)
+        roland['title'] = 'Roland FP-10 Digital Piano SUSTAIN DAMPER Pedal LOOKS LIKE STORE DEMO, NOS!'
+        self.assertIsNone(t.evaluate(roland, self.c['searches'][4], self.c, 'shipped'))
 
     def test_auction_currency_condition(self):
         for key, value in [('buyingOptions',['AUCTION']),('conditionId','7000'),('price',{'value':'100','currency':'EUR'})]:
