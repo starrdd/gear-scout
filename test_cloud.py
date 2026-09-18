@@ -8,8 +8,8 @@ import cloud_run as c
 import tracker
 
 class CloudTests(unittest.TestCase):
-    def test_exceptional_issue_payload(self):
-        row = {'title':'AKG C214','total':100.0,'discount':59.2,'typical':245,'url':'https://www.ebay.com/itm/1','condition':'Used'}
+    def test_qualifying_issue_payload(self):
+        row = {'title':'AKG C214','price':140.0,'shipping':10.0,'total':150.0,'discount':38.8,'typical':245,'tier':'Strong value','url':'https://www.ebay.com/itm/1','condition':'Used'}
         response = unittest.mock.MagicMock()
         response.__enter__.return_value = response
         response.__exit__.return_value = False
@@ -18,8 +18,11 @@ class CloudTests(unittest.TestCase):
             c.github_issue(row)
         request = call.call_args.args[0]
         payload = json.loads(request.data)
-        self.assertIn('Exceptional find', payload['title'])
+        self.assertIn('Strong value', payload['title'])
         self.assertEqual(payload['assignees'], ['starrdd'])
+        self.assertIn('Shipping: $10.00', payload['body'])
+        self.assertIn('Savings: $95.00 (38.8%)', payload['body'])
+        self.assertIn('[View listing](https://www.ebay.com/itm/1)', payload['body'])
         self.assertNotIn('Seller:', payload['body'])
 
     def test_demo_no_network_or_state(self):

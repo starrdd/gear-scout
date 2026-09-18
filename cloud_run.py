@@ -12,14 +12,19 @@ import tracker
 STATE_FILE = 'cloud-alert-state.json'
 
 def github_issue(row):
-    """Create a GitHub notification for a newly found exceptional deal."""
+    """Create a GitHub notification for a newly qualified deal."""
     repo = os.environ['GITHUB_REPOSITORY']
     url = 'https://api.github.com/repos/' + repo + '/issues'
     headers = {'Authorization': 'Bearer ' + os.environ['GH_TOKEN'], 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', 'Content-Type': 'application/json'}
     safe_title = str(row['title']).replace('\n', ' ').strip()[:140]
     body = {
-        'title': f'Exceptional find: {safe_title} — ${row["total"]:.2f}',
-        'body': f'**{row["discount"]}% below the ${row["typical"]:.0f} used benchmark**\n\n[Open the eBay listing]({row["url"]})\n\nCondition: {row["condition"]}\n\nVerify the listing, seller, completeness, and final checkout price before buying.',
+        'title': f'{row["tier"]}: {safe_title} — ${row["total"]:.2f}',
+        'body': (f'**{row["tier"]}: {row["discount"]}% below the used benchmark**\n\n'
+                 f'Item: ${row["price"]:.2f} · Shipping: ${row["shipping"]:.2f} · **Total: ${row["total"]:.2f}**\n\n'
+                 f'Estimated used value: ${row["typical"]:.2f} · Savings: ${row["typical"] - row["total"]:.2f} ({row["discount"]}%)\n\n'
+                 f'Marketplace: eBay · Condition: {row["condition"]}\n\n'
+                 f'[View listing]({row["url"]})\n\n'
+                 'Verify the listing, seller, completeness, and final checkout price before buying.'),
         'assignees': [os.environ['GITHUB_REPOSITORY_OWNER']],
     }
     req = urllib.request.Request(url, headers=headers, method='POST', data=json.dumps(body).encode())
@@ -60,7 +65,7 @@ def summary(results):
         text += f'- {title}: **${row["total"]:.2f}**, {row["discount"]}% below estimate.\n'
     if results['errors']:
         text += '\n## Check issues\n\n' + '\n'.join('- ' + tracker.html.escape(e) for e in results['errors']) + '\n'
-    text += '\nOpen the Gear Scout website for the full dashboard. A downloadable copy is also available under **gear-scout-report** in Artifacts.\n\nPhone/email deal delivery is not configured; results and alert history are available in this run.\n'
+    text += '\nOpen the Gear Scout website for the full dashboard. A downloadable copy is also available under **gear-scout-report** in Artifacts. Qualifying new deals are assigned to you as GitHub issues.\n'
     return text
 
 def main():
@@ -86,8 +91,7 @@ def main():
     results = json.loads((out / 'results.json').read_text())
     if not demo:
         for row in results.get('new_alerts', []):
-            if row.get('tier') == 'Exceptional find':
-                github_issue(row)
+            github_issue(row)
     report = summary(results)
     (out / 'summary.md').write_text(report)
     if os.getenv('GITHUB_STEP_SUMMARY'):
