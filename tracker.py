@@ -200,14 +200,17 @@ def run(c, api, demo, directory, desktop):
     rows, errors = {}, []
     modes = ['shipped', 'pickup'] if c['mode'] == 'both' else [c['mode']]
     for s in c['searches']:
+        ebay_count, filtered = 0, {}
         for mode in (['shipped'] if demo else modes):
             try:
                 items, truncated = (demo_items(), False) if demo else api.search(s, c, mode)
+                ebay_count += len(items)
                 if truncated:
                     errors.append(f'{s["name"]} ({mode}): capped at 600 newest results; narrow the query if needed.')
                 for item in items:
                     row = evaluate(item, s, c, mode)
                     if row:
+                        filtered[row['id']] = row
                         old = rows.get(row['id'])
                         if old is None or (row['total'] is not None and (old['total'] is None or row['total'] < old['total'])):
                             rows[row['id']] = row
@@ -215,6 +218,7 @@ def run(c, api, demo, directory, desktop):
                 errors.append(f'{s["name"]} ({mode}): {e}')
                 if 'credentials' in str(e) or 'HTTP 401' in str(e) or 'HTTP 403' in str(e) or 'HTTP 429' in str(e):
                     break
+        print(f'{s["name"]} → eBay results: {ebay_count} → after filtering: {len(filtered)} → qualifying deals: {sum(r["good"] for r in filtered.values())}', flush=True)
         if errors and any(x in errors[-1] for x in ('credentials', 'HTTP 401', 'HTTP 403', 'HTTP 429')):
             break
     directory.mkdir(parents=True, exist_ok=True)
